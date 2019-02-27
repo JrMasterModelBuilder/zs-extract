@@ -4,6 +4,7 @@
 		"target": "ESNext",
 		"module": "commonjs",
 		"moduleResolution": "Node",
+		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
 		"lib": [
 			"ESNext",
