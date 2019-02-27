@@ -72,6 +72,8 @@ describe('extract', () => {
 				url: info.download,
 				encoding: null
 			});
+			expect(data.response.statusCode).toBe(200);
+
 			expect(data.body.length).toBe(avatar.size);
 
 			expect(sha256(data.body)).toBe(avatar.sha256);
@@ -91,6 +93,8 @@ describe('extract', () => {
 				url: info.download,
 				encoding: null
 			});
+			expect(data.response.statusCode).toBe(200);
+
 			expect(data.body.length).toBe(avatar.size);
 
 			expect(sha256(data.body)).toBe(avatar.sha256);
