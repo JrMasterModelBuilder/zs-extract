@@ -1,0 +1,44 @@
+{
+	"compileOnSave": false,
+	"compilerOptions": {
+		"target": "ESNext",
+		"module": "commonjs",
+		"moduleResolution": "Node",
+		"allowSyntheticDefaultImports": true,
+		"lib": [
+			"ESNext",
+			"ES2017.SharedMemory"
+		],
+		"newLine": "lf",
+
+		"alwaysStrict": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"forceConsistentCasingInFileNames": true,
+
+		"strictFunctionTypes": false,
+		"strictNullChecks": true,
+		"strictPropertyInitialization": true,
+
+		"noImplicitAny": true,
+		"noImplicitReturns": true,
+		"noImplicitThis": true,
+
+		"declaration": true,
+		"emitDeclarationOnly": true,
+
+		"types": [
+			"node",
+			"jasmine",
+			"request",
+			"cheerio"
+		],
+		"outDir": "lib",
+		"rootDirs": [
+			"./src"
+		]
+	},
+	"include": [
+		"src/**/*.ts"
+	]
+}
