@@ -152,7 +152,7 @@ export async function extract(
 		}
 	}
 	if (!result || !result.dlbutton) {
-		throw new Error('Failed to extrat info');
+		throw new Error('Failed to extract info');
 	}
 
 	const download = url.resolve(uri, result.dlbutton);
