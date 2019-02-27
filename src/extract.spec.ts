@@ -50,6 +50,8 @@ function sha256(buffer: Buffer) {
 	return h.digest('hex').toLowerCase();
 }
 
+const timeout = 10000;
+
 const avatar = {
 	URL: 'https://www109.zippyshare.com/v/EXfrFTJo/file.html',
 	filename: 'jmmb avatar.png',
@@ -77,7 +79,7 @@ describe('extract', () => {
 			expect(data.body.length).toBe(avatar.size);
 
 			expect(sha256(data.body)).toBe(avatar.sha256);
-		});
+		}, timeout);
 
 		it('custom request object', async () => {
 			const req = request.defaults({});
@@ -98,6 +100,6 @@ describe('extract', () => {
 			expect(data.body.length).toBe(avatar.size);
 
 			expect(sha256(data.body)).toBe(avatar.sha256);
-		});
+		}, timeout);
 	});
 });
