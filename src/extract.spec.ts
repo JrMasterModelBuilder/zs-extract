@@ -5,7 +5,7 @@ import {
 	extract
 } from './extract';
 
-const skipTestDL = /(1|true|yes)/i.test(process.env.SKIP_TEST_DL || '');
+const skipTestDL = /^(1|true|yes)$/i.test(process.env.SKIP_TEST_DL || '');
 
 /**
  * A request promise wrapper.
