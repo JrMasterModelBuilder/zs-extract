@@ -28,7 +28,6 @@
 	"license": "MPL-2.0",
 	"dependencies": {
 		"@babel/runtime": "^7.3.4",
-		"@types/cheerio": "^0.22.10",
 		"@types/request": "^2.48.1",
 		"cheerio": "^1.0.0-rc.2",
 		"request": "^2.88.0"
@@ -41,6 +40,7 @@
 		"@babel/preset-env": "^7.3.4",
 		"@babel/preset-typescript": "^7.3.3",
 		"@babel/register": "^7.0.0",
+		"@types/cheerio": "^0.22.10",
 		"@types/jasmine": "^3.3.9",
 		"@types/node": "^11.9.5",
 		"eslint": "^5.14.1",
