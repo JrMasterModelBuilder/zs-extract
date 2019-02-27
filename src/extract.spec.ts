@@ -5,6 +5,8 @@ import {
 	extract
 } from './extract';
 
+const skipTestDL = /(1|true|yes)/i.test(process.env.SKIP_TEST_DL || '');
+
 /**
  * A request promise wrapper.
  *
@@ -60,6 +62,11 @@ describe('extract', () => {
 		it('simple', async () => {
 			const info = await extract(avatar.URL);
 			expect(info.filename).toBe(avatar.filename);
+			expect(info.download).toMatch(/^https?:\/\//i);
+
+			if (skipTestDL) {
+				return;
+			}
 
 			const data = await requestP({
 				url: info.download,
@@ -74,6 +81,11 @@ describe('extract', () => {
 			const req = request.defaults({});
 			const info = await extract(avatar.URL, req);
 			expect(info.filename).toBe(avatar.filename);
+			expect(info.download).toMatch(/^https?:\/\//i);
+
+			if (skipTestDL) {
+				return;
+			}
 
 			const data = await requestP({
 				url: info.download,
