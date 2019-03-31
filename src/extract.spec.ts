@@ -5,6 +5,15 @@ import {
 	extract
 } from './extract';
 
+const timeout = 10000;
+
+const avatar = {
+	URL: 'https://www85.zippyshare.com/v/eE67Qy6f/file.html',
+	filename: 'jmmb avatar.png',
+	size: 136877,
+	sha256: '3602a46469e9ece1ec77f3c6ea484b2ef90c09a2a6f4214456c461ece0d4f7f7'
+};
+
 const skipTestDL = /^(1|true|yes)$/i.test(process.env.SKIP_TEST_DL || '');
 
 const forceRequestDl = /^(1|true|yes)$/i.test(
@@ -53,15 +62,6 @@ function sha256(buffer: Buffer) {
 	h.update(buffer);
 	return h.digest('hex').toLowerCase();
 }
-
-const timeout = 10000;
-
-const avatar = {
-	URL: 'https://www85.zippyshare.com/v/eE67Qy6f/file.html',
-	filename: 'jmmb avatar.png',
-	size: 136877,
-	sha256: '3602a46469e9ece1ec77f3c6ea484b2ef90c09a2a6f4214456c461ece0d4f7f7'
-};
 
 describe('extract', () => {
 	describe('extract', () => {
