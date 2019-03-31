@@ -53,7 +53,7 @@ function sha256(buffer: Buffer) {
 const timeout = 10000;
 
 const avatar = {
-	URL: 'https://www109.zippyshare.com/v/EXfrFTJo/file.html',
+	URL: 'https://www85.zippyshare.com/v/eE67Qy6f/file.html',
 	filename: 'jmmb avatar.png',
 	size: 136877,
 	sha256: '3602a46469e9ece1ec77f3c6ea484b2ef90c09a2a6f4214456c461ece0d4f7f7'
