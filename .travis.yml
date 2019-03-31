@@ -10,9 +10,10 @@ cache:
     - 'node_modules'
 
 env:
-  # Cannot test actual download content from CI servers, HTML response
-  - SKIP_TEST_DL=1
-  - FORCE_REQUEST_DL=1
+  global:
+    # Cannot test actual download content from CI servers, HTML response
+    - SKIP_TEST_DL=1
+    - FORCE_REQUEST_DL=1
 
 script:
   - npm run clean
