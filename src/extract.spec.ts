@@ -7,6 +7,10 @@ import {
 
 const skipTestDL = /^(1|true|yes)$/i.test(process.env.SKIP_TEST_DL || '');
 
+const forceRequestDl = /^(1|true|yes)$/i.test(
+	process.env.FORCE_REQUEST_DL || ''
+);
+
 /**
  * A request promise wrapper.
  *
@@ -67,6 +71,14 @@ describe('extract', () => {
 			expect(info.download).toMatch(/^https?:\/\//i);
 
 			if (skipTestDL) {
+				// Optionally force download request, without test.
+				// Might help keep the download active.
+				if (forceRequestDl) {
+					await requestP({
+						url: info.download,
+						encoding: null
+					});
+				}
 				return;
 			}
 
@@ -88,6 +100,14 @@ describe('extract', () => {
 			expect(info.download).toMatch(/^https?:\/\//i);
 
 			if (skipTestDL) {
+				// Optionally force download request, without test.
+				// Might help keep the download active.
+				if (forceRequestDl) {
+					await requestP({
+						url: info.download,
+						encoding: null
+					});
+				}
 				return;
 			}
 
