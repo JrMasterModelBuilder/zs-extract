@@ -28,23 +28,23 @@
 	"copyright": "Copyright (c) 2019 JrMasterModelBuilder",
 	"license": "MPL-2.0",
 	"dependencies": {
-		"@babel/runtime": "^7.4.5",
+		"@babel/runtime": "^7.5.4",
 		"@types/request": "^2.48.1",
 		"cheerio": "^1.0.0-rc.3",
 		"request": "^2.88.0"
 	},
 	"devDependencies": {
-		"@babel/core": "^7.4.5",
-		"@babel/plugin-proposal-class-properties": "^7.4.4",
+		"@babel/core": "^7.5.4",
+		"@babel/plugin-proposal-class-properties": "^7.5.0",
 		"@babel/plugin-proposal-decorators": "^7.4.4",
-		"@babel/plugin-transform-runtime": "^7.4.4",
-		"@babel/preset-env": "^7.4.5",
+		"@babel/plugin-transform-runtime": "^7.5.0",
+		"@babel/preset-env": "^7.5.4",
 		"@babel/preset-typescript": "^7.3.3",
 		"@babel/register": "^7.4.4",
-		"@types/cheerio": "^0.22.11",
+		"@types/cheerio": "^0.22.12",
 		"@types/jasmine": "^3.3.13",
-		"@types/node": "^12.0.5",
-		"eslint": "^5.16.0",
+		"@types/node": "^12.6.2",
+		"eslint": "^6.0.1",
 		"gulp": "^4.0.2",
 		"gulp-babel": "^8.0.0",
 		"gulp-filter": "^6.0.0",
@@ -61,9 +61,9 @@
 		"nps-utils": "^1.7.0",
 		"rimraf": "^2.6.3",
 		"source-map-support": "^0.5.12",
-		"tslint": "^5.17.0",
+		"tslint": "^5.18.0",
 		"tslint-consistent-codestyle": "^1.15.1",
 		"tslint-eslint-rules": "^5.4.0",
-		"typescript": "^3.5.1"
+		"typescript": "^3.5.3"
 	}
 }
