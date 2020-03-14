@@ -1,5 +1,6 @@
-import request from 'request';
 import crypto from 'crypto';
+
+import request from 'request';
 
 import {
 	extract
@@ -14,9 +15,11 @@ const avatar = {
 	sha256: '3602a46469e9ece1ec77f3c6ea484b2ef90c09a2a6f4214456c461ece0d4f7f7'
 };
 
+// eslint-disable-next-line no-process-env
 const skipTestDL = /^(1|true|yes)$/i.test(process.env.SKIP_TEST_DL || '');
 
 const forceRequestDl = /^(1|true|yes)$/i.test(
+	// eslint-disable-next-line no-process-env
 	process.env.FORCE_REQUEST_DL || ''
 );
 
@@ -24,14 +27,16 @@ const forceRequestDl = /^(1|true|yes)$/i.test(
  * A request promise wrapper.
  *
  * @param options Request options.
- * @return Request response and body.
+ * @returns Request response and body.
  */
 async function requestP(options: request.OptionsWithUrl) {
 	const r = await new Promise<{
+
 		/**
 		 * Response object.
 		 */
 		response: request.Response;
+
 		/**
 		 * Response body.
 		 */
@@ -55,7 +60,7 @@ async function requestP(options: request.OptionsWithUrl) {
  * Create a sha256 hex lowercase hash from buffer.
  *
  * @param buffer The buffer to hash.
- * @return Hex string.
+ * @returns Hex string.
  */
 function sha256(buffer: Buffer) {
 	const h = crypto.createHash('sha256');

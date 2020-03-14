@@ -9,17 +9,19 @@ import cheerio from 'cheerio';
  *
  * @param req Request function.
  * @param options Request options.
- * @return Request response and body.
+ * @returns Request response and body.
  */
 async function requestP(
 	req: typeof request,
 	options: request.OptionsWithUrl
 ) {
 	const r = await new Promise<{
+
 		/**
 		 * Response object.
 		 */
 		response: request.Response;
+
 		/**
 		 * Response body.
 		 */
@@ -43,7 +45,7 @@ async function requestP(
  * Extract script code from HTML code.
  *
  * @param html HTML code.
- * @return Script code.
+ * @returns Script code.
  */
 function extractScripts(html: string) {
 	const r: string[] = [];
@@ -61,11 +63,11 @@ function extractScripts(html: string) {
  * Attempt to extract info from script.
  *
  * @param script Script code.
- * @return Result object or null.
+ * @returns Result object or null.
  */
 function extractScript(script: string) {
 	let result: object | null = null;
-	if (!/dlbutton/.test(script)) {
+	if (!script.includes('dlbutton')) {
 		return result;
 	}
 
@@ -79,6 +81,7 @@ function extractScript(script: string) {
 
 	// Setup environment.
 	const codePre = [
+		/* eslint-disable @typescript-eslint/indent */
 		'window = this;',
 		'document = (function(r) {',
 			'var elements = {',
@@ -90,13 +93,16 @@ function extractScript(script: string) {
 			'}',
 			'return r;',
 		'})({});'
+		/* eslint-enable @typescript-eslint/indent */
 	].join('\n');
 
 	// Extract info from environment.
 	const codePost = [
+		/* eslint-disable @typescript-eslint/indent */
 		'JSON.stringify({',
 			'"dlbutton": document.getElementById("dlbutton").href',
 		'})'
+		/* eslint-enable @typescript-eslint/indent */
 	].join('\n');
 
 	// Attempt to run code in sanbox and extract the info.
@@ -110,7 +116,7 @@ function extractScript(script: string) {
 		// Run the post script.
 		// Force return value to be string, with concatenation, NOT casting.
 		// This prevents any funny business from sandboxed code.
-		// tslint:disable-next-line: restrict-plus-operands
+		// eslint-disable-next-line
 		result = JSON.parse('' + vm.runInContext(codePost, ctx, runOpts));
 	}
 	catch (err) {
@@ -124,7 +130,7 @@ function extractScript(script: string) {
  *
  * @param uri The URI to extract info from.
  * @param req Optional custom request function or null.
- * @return File info.
+ * @returns File info.
  */
 export async function extract(
 	uri: string,
