@@ -1,22 +1,21 @@
 language: node_js
 
 node_js:
-  - 'v10.0.0'
-  - 'v10.16.0'
-  - 'v12.6.0'
+- v10.0.0
+- v13.12.0
 
 cache:
   directories:
-    - 'node_modules'
+  - 'node_modules'
 
 env:
   global:
-    # Cannot test actual download content from CI servers, HTML response
-    - SKIP_TEST_DL=1
-    - FORCE_REQUEST_DL=1
+  # Cannot test actual download content from CI servers, HTML response
+  - SKIP_TEST_DL=1
+  - FORCE_REQUEST_DL=1
 
 script:
-  - npm run clean
-  - npm run lint
-  - npm run build
-  - npm run test
+- npm run clean
+- npm run lint
+- npm run build
+- npm run test
