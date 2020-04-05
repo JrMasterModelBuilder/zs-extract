@@ -4,10 +4,6 @@ node_js:
 - v10.0.0
 - v13.12.0
 
-cache:
-  directories:
-  - 'node_modules'
-
 env:
   global:
   # Cannot test actual download content from CI servers, HTML response
