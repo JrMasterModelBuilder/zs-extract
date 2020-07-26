@@ -149,7 +149,7 @@ async function requestP(
 function extractScripts(html: string) {
 	const r: string[] = [];
 	const $ = cheerio.load(html);
-	$('script').each((elI, el) => {
+	$('script').each((_elI, el) => {
 		const data = $(el).html();
 		if (data) {
 			r.push(data);
