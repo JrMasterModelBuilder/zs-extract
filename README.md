@@ -22,9 +22,9 @@ This module simplifies extracting download info from a Zippyshare link. Instead 
 ```js
 import zsExtract from 'zs-extract';
 
-const info = await zsExtract.extract('https://www109.zippyshare.com/v/EXfrFTJo/file.html');
+const info = await zsExtract.extract('https://www85.zippyshare.com/v/eE67Qy6f/file.html');
 
-console.log(info); // { download: 'https://www109.zippyshare.com/d/EXfrFTJo/816592/jmmb%20avatar.png', filename: 'jmmb avatar.png' }
+console.log(info); // { download: 'https://www85.zippyshare.com/d/eE67Qy6f/816592/jmmb%20avatar.png', filename: 'jmmb avatar.png' }
 ```
 
 
