@@ -31,9 +31,9 @@
 	"license": "MPL-2.0",
 	"dependencies": {
 		"@babel/runtime": "^7.10.5",
-		"@types/request": "^2.48.5",
+		"@types/node-fetch": "^2.5.7",
 		"cheerio": "^1.0.0-rc.3",
-		"request": "^2.88.2"
+		"node-fetch": "^2.6.0"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.10.5",

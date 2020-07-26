@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 
-import request from 'request';
+import fetch from 'node-fetch';
 
 import {
 	extract
@@ -22,39 +22,6 @@ const forceRequestDl = /^(1|true|yes)$/i.test(
 	// eslint-disable-next-line no-process-env
 	process.env.FORCE_REQUEST_DL || ''
 );
-
-/**
- * A request promise wrapper.
- *
- * @param options Request options.
- * @returns Request response and body.
- */
-async function requestP(options: request.OptionsWithUrl) {
-	const r = await new Promise<{
-
-		/**
-		 * Response object.
-		 */
-		response: request.Response;
-
-		/**
-		 * Response body.
-		 */
-		body: any;
-	}>((resolve, reject) => {
-		request(options, (error, response, body) => {
-			if (error) {
-				reject(error);
-				return;
-			}
-			resolve({
-				response,
-				body
-			});
-		});
-	});
-	return r;
-}
 
 /**
  * Create a sha256 hex lowercase hash from buffer.
@@ -79,52 +46,28 @@ describe('extract', () => {
 				// Optionally force download request, without test.
 				// Might help keep the download active.
 				if (forceRequestDl) {
-					await requestP({
-						url: info.download,
-						encoding: null
+					const res = await fetch(info.download, {
+						headers: {
+							'User-Agent': '-'
+						}
 					});
+					await res.buffer();
 				}
 				return;
 			}
 
-			const data = await requestP({
-				url: info.download,
-				encoding: null
-			});
-			expect(data.response.statusCode).toBe(200);
-
-			expect(data.body.length).toBe(avatar.size);
-
-			expect(sha256(data.body)).toBe(avatar.sha256);
-		}, timeout);
-
-		it('custom request object', async () => {
-			const req = request.defaults({});
-			const info = await extract(avatar.URL, req);
-			expect(info.filename).toBe(avatar.filename);
-			expect(info.download).toMatch(/^https?:\/\//i);
-
-			if (skipTestDL) {
-				// Optionally force download request, without test.
-				// Might help keep the download active.
-				if (forceRequestDl) {
-					await requestP({
-						url: info.download,
-						encoding: null
-					});
+			const res = await fetch(info.download, {
+				headers: {
+					'User-Agent': '-'
 				}
-				return;
-			}
-
-			const data = await requestP({
-				url: info.download,
-				encoding: null
 			});
-			expect(data.response.statusCode).toBe(200);
+			const body = await res.buffer();
 
-			expect(data.body.length).toBe(avatar.size);
+			expect(res.status).toBe(200);
 
-			expect(sha256(data.body)).toBe(avatar.sha256);
+			expect(body.length).toBe(avatar.size);
+
+			expect(sha256(body)).toBe(avatar.sha256);
 		}, timeout);
 	});
 });

@@ -1,8 +1,107 @@
 import vm from 'vm';
 import url from 'url';
 
-import request from 'request';
 import cheerio from 'cheerio';
+import fetch from 'node-fetch';
+
+export interface IRequestOptions {
+
+	/**
+	 * URL string.
+	 */
+	url: string;
+
+	/**
+	 * Request method.
+	 */
+	method?: string;
+
+	/**
+	 * Request headers.
+	 */
+	headers?: {[key: string]: string};
+
+	/**
+	 * Gzip compression.
+	 */
+	gzip?: boolean;
+
+	/**
+	 * Body encoding used for callback functions.
+	 */
+	encoding?: string | null;
+}
+
+export interface IRequestResponse {
+
+	/**
+	 * Status code.
+	 */
+	statusCode: number;
+
+	/**
+	 * Response headers, all lowercase.
+	 */
+	headers: {[key: string]: string};
+}
+
+export type IRequestCallback = (
+	error: any,
+	response: IRequestResponse,
+	body: any
+) => void;
+
+export type IRequest = (
+	options: IRequestOptions,
+	cb?: IRequestCallback
+) => any;
+
+/**
+ * The default request implementation.
+ *
+ * @param options Options object.
+ * @param cb Callback function.
+ */
+function request(
+	options: IRequestOptions,
+	cb: IRequestCallback
+) {
+	let response: IRequestResponse = {
+		statusCode: 0,
+		headers: {}
+	};
+	const {encoding} = options;
+	(async () => {
+		const res = await fetch(options.url, {
+			method: options.method || 'GET',
+			headers: {
+				'User-Agent': '-',
+				...(options.headers || {})
+			},
+			compress: !!options.gzip
+		});
+		const {status, headers} = res;
+		const headersRaw = headers.raw();
+		const headersObject: {[key: string]: string} = {};
+		for (const p of Object.keys(headersRaw)) {
+			headersObject[p] = headersRaw[p].join(', ');
+		}
+		response = {
+			statusCode: status,
+			headers: headersObject
+		};
+		const data = await res.buffer();
+		return encoding === null ? data : data.toString(encoding as any);
+	})()
+		.then(
+			data => {
+				cb(null, response, data);
+			},
+			err => {
+				cb(err, response, null);
+			}
+		);
+}
 
 /**
  * A request promise wrapper.
@@ -12,15 +111,15 @@ import cheerio from 'cheerio';
  * @returns Request response and body.
  */
 async function requestP(
-	req: typeof request,
-	options: request.OptionsWithUrl
+	req: IRequest,
+	options: IRequestOptions
 ) {
 	const r = await new Promise<{
 
 		/**
 		 * Response object.
 		 */
-		response: request.Response;
+		response: IRequestResponse;
 
 		/**
 		 * Response body.
@@ -134,11 +233,12 @@ function extractScript(script: string) {
  */
 export async function extract(
 	uri: string,
-	req: typeof request | null = null
+	req: IRequest | null = null
 ) {
-	const requester = req || request;
+	const requester = req || (request as IRequest);
 	const {response, body} = await requestP(requester, {
-		url: uri
+		url: uri,
+		gzip: true
 	});
 	const {statusCode} = response;
 	if (statusCode !== 200) {
