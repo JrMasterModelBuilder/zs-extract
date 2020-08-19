@@ -12,6 +12,9 @@ import gulpSourcemaps from 'gulp-sourcemaps';
 import gulpBabel from 'gulp-babel';
 import execa from 'execa';
 import del from 'del';
+import onetime from 'onetime';
+import webpack from 'webpack';
+import MemoryFs from 'memory-fs';
 
 const readFile = util.promisify(fs.readFile);
 const pipeline = util.promisify(stream.pipeline);
@@ -24,16 +27,47 @@ async function exec(cmd, args = []) {
 }
 
 async function packageJSON() {
-	packageJSON.json = packageJSON.json || readFile('package.json', 'utf8');
-	return JSON.parse(await packageJSON.json);
+	return JSON.parse(await readFile('package.json', 'utf8'));
 }
 
 async function babelrc() {
-	babelrc.json = babelrc.json || readFile('.babelrc', 'utf8');
-	return Object.assign(JSON.parse(await babelrc.json), {
+	return Object.assign(JSON.parse(await readFile('.babelrc', 'utf8')), {
 		babelrc: false
 	});
 }
+
+const compileWindow = onetime(async () => {
+	const filename = 'index.js';
+	const compiler = webpack({
+		entry: './window/',
+		output: {
+			library: '_',
+			libraryTarget: 'var',
+			filename,
+			path: '/'
+		}
+	});
+	compiler.outputFileSystem = new MemoryFs();
+	await new Promise((resolve, reject) => {
+		compiler.run((err, stats) => {
+			err = err || (
+				stats.hasErrors() ? stats.compilation.errors[0] : null
+			);
+			if (err) {
+				reject(err);
+				return;
+			}
+			resolve();
+		});
+	});
+	return compiler.outputFileSystem.data[filename].toString('utf8')
+		.trim()
+		.split('=')
+		.slice(1)
+		.join('=')
+		.replace(/;$/, '')
+		.trim();
+});
 
 async function babelTarget(src, srcOpts, dest, modules) {
 	// Change module.
@@ -65,10 +99,14 @@ async function babelTarget(src, srcOpts, dest, modules) {
 	const pkg = await packageJSON();
 
 	// Filter meta data file and create replace transform.
-	const filterMeta = gulpFilter(['*/meta.ts'], {restore: true});
+	const filterMeta = gulpFilter([
+		'*/meta.ts',
+		'*/data.ts'
+	], {restore: true});
 	const filterMetaReplaces = [
 		["'@VERSION@'", JSON.stringify(pkg.version)],
-		["'@NAME@'", JSON.stringify(pkg.name)]
+		["'@NAME@'", JSON.stringify(pkg.name)],
+		["'@WINDOW@'", JSON.stringify(await compileWindow())]
 	].map(v => gulpReplace(...v));
 
 	await pipeline(...[

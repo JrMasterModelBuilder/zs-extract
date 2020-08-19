@@ -4,6 +4,8 @@ import url from 'url';
 import cheerio from 'cheerio';
 import fetch from 'node-fetch';
 
+import {WINDOW} from './data';
+
 export interface IRequestOptions {
 
 	/**
@@ -141,6 +143,29 @@ async function requestP(
 }
 
 /**
+ * Code to create window.
+ *
+ * @param body HTML body.
+ * @returns JavaScript code.
+ */
+function codeWindow(body: string) {
+	return `(${WINDOW})(this,${JSON.stringify(body)})`;
+}
+
+/**
+ * Code to extract data from window.
+ *
+ * @param data Data object.
+ * @returns JavaScript code.
+ */
+function codeExtract(data: {[k: string]: string}) {
+	const body = Object.entries(data)
+		.map(a => a.join(':'))
+		.join(',');
+	return `(""+JSON.stringify({${body}}))`;
+}
+
+/**
  * Extract script code from HTML code.
  *
  * @param html HTML code.
@@ -161,10 +186,11 @@ function extractScripts(html: string) {
 /**
  * Attempt to extract info from script.
  *
+ * @param body HTML body.
  * @param script Script code.
  * @returns Result object or null.
  */
-function extractScript(script: string) {
+function extractScript(body: string, script: string) {
 	let result: object | null = null;
 	if (!script.includes('dlbutton')) {
 		return result;
@@ -173,36 +199,24 @@ function extractScript(script: string) {
 	// Create a context with wich to run code in
 	// Creating the object with a null prototype is very important.
 	// Prevents host variables from leaking into the sanbox.
-	const ctx = vm.createContext(Object.create(null));
+	const ctxObj = Object.create(null);
+	if (ctxObj.toString) {
+		throw new Error('Failed to create object without prototype');
+	}
+	const ctx = vm.createContext(ctxObj);
 	const runOpts = {
 		timeout: 1000
 	};
 
 	// Setup environment.
-	const codePre = [
-		/* eslint-disable @typescript-eslint/indent */
-		'window = this;',
-		'document = (function(r) {',
-			'var elements = {',
-				'"dlbutton": {},',
-				'"fimage": {}',
-			'};',
-			'r.getElementById = function(id) {',
-				'return elements[id];',
-			'}',
-			'return r;',
-		'})({});'
-		/* eslint-enable @typescript-eslint/indent */
-	].join('\n');
+	const codePre = codeWindow(body);
 
 	// Extract info from environment.
-	const codePost = [
-		/* eslint-disable @typescript-eslint/indent */
-		'JSON.stringify({',
-			'"dlbutton": document.getElementById("dlbutton").href',
-		'})'
-		/* eslint-enable @typescript-eslint/indent */
-	].join('\n');
+	const codePost = codeExtract(
+		{
+			dlbutton: 'document.getElementById("dlbutton").href'
+		}
+	);
 
 	// Attempt to run code in sanbox and extract the info.
 	try {
@@ -252,7 +266,7 @@ export async function extract(
 	const scripts = extractScripts(body);
 	let result: any | null = null;
 	for (const script of scripts) {
-		result = extractScript(script);
+		result = extractScript(body, script);
 		if (result) {
 			break;
 		}

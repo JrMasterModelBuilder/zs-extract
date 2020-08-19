@@ -32,6 +32,7 @@ yarn.lock
 /nodemon.json
 /spec
 /src
+/window
 
 /lib/**/*.spec.d.ts
 /lib/**/*.spec.js
