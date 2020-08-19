@@ -2,7 +2,7 @@ language: node_js
 
 env:
   global:
-  # Cannot test actual download content from CI servers, HTML response
+  # Cannot test actual download content from CI servers, HTML response.
   - SKIP_TEST_DL=1
   - FORCE_REQUEST_DL=1
 
@@ -11,7 +11,7 @@ matrix:
   - node_js: v10.0.0
     env:
     - NO_LINT=1
-  - node_js: v14.6.0
+  - node_js: v14.8.0
 
 script:
 - npm run clean
