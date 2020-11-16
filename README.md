@@ -9,7 +9,7 @@ Zippyshare download data extractor
 [![size](https://packagephobia.now.sh/badge?p=zs-extract)](https://packagephobia.now.sh/result?p=zs-extract)
 [![downloads](https://img.shields.io/npm/dm/zs-extract.svg)](https://npmcharts.com/compare/zs-extract?minimal=true)
 
-[![travis-ci](https://travis-ci.com/JrMasterModelBuilder/zs-extract.svg?branch=master)](https://travis-ci.com/JrMasterModelBuilder/zs-extract)
+[![Build Status](https://github.com/JrMasterModelBuilder/zs-extract/workflows/main/badge.svg?branch=master)](https://github.com/JrMasterModelBuilder/zs-extract/actions?query=workflow%3Amain+branch%3Amaster)
 
 
 # Overview
