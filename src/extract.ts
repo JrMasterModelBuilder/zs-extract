@@ -253,7 +253,6 @@ export async function extract(
 	// Run the scripts that modify the download button.
 	for (const script of info.scripts) {
 		if (script.includes('dlbutton')) {
-			// Run the required script.
 			sandbox.run(script, {
 				timeout
 			});
@@ -275,6 +274,7 @@ export async function extract(
 		throw new Error('Failed to extract info');
 	}
 
+	// Parse download link and file name.
 	const download = url.resolve(uri, result.dlbutton);
 	const filename = decodeURI(
 		(url.parse(download).pathname || '').split('/').pop() || ''
