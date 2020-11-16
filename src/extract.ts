@@ -1,7 +1,6 @@
 import vm from 'vm';
 import url from 'url';
 
-import cheerio from 'cheerio';
 import fetch from 'node-fetch';
 
 import {WINDOW} from './data';
@@ -143,60 +142,12 @@ async function requestP(
 }
 
 /**
- * Code to create window.
+ * Create a VM sandbox safe from context leakage.
  *
- * @param body HTML body.
- * @returns JavaScript code.
+ * @returns Methods to run code in the VM sandbox.
  */
-function codeWindow(body: string) {
-	return `(${WINDOW})(this,${JSON.stringify(body)})`;
-}
-
-/**
- * Code to extract data from window.
- *
- * @param data Data object.
- * @returns JavaScript code.
- */
-function codeExtract(data: {[k: string]: string}) {
-	const body = Object.entries(data)
-		.map(a => a.join(':'))
-		.join(',');
-	return `(""+JSON.stringify({${body}}))`;
-}
-
-/**
- * Extract script code from HTML code.
- *
- * @param html HTML code.
- * @returns Script code.
- */
-function extractScripts(html: string) {
-	const r: string[] = [];
-	const $ = cheerio.load(html);
-	$('script').each((_elI, el) => {
-		const data = $(el).html();
-		if (data) {
-			r.push(data);
-		}
-	});
-	return r;
-}
-
-/**
- * Attempt to extract info from script.
- *
- * @param body HTML body.
- * @param script Script code.
- * @returns Result object or null.
- */
-function extractScript(body: string, script: string) {
-	let result: object | null = null;
-	if (!script.includes('dlbutton')) {
-		return result;
-	}
-
-	// Create a context with wich to run code in
+function createSandbox() {
+	// Create a context with which to run code in.
 	// Creating the object with a null prototype is very important.
 	// Prevents host variables from leaking into the sanbox.
 	const ctxObj = Object.create(null);
@@ -204,38 +155,52 @@ function extractScript(body: string, script: string) {
 		throw new Error('Failed to create object without prototype');
 	}
 	const ctx = vm.createContext(ctxObj);
-	const runOpts = {
-		timeout: 1000
-	};
-
-	// Setup environment.
-	const codePre = codeWindow(body);
-
-	// Extract info from environment.
-	const codePost = codeExtract(
-		{
-			dlbutton: 'document.getElementById("dlbutton").href'
+	return {
+		run: (code: string, opts: vm.RunningScriptOptions) => {
+			let error = false;
+			try {
+				vm.runInContext(code, ctx, opts);
+			}
+			catch (err) {
+				error = true;
+			}
+			if (error) {
+				throw new Error('Error running sandboxed script');
+			}
+		},
+		data: (data: {[k: string]: string}, opts: vm.RunningScriptOptions) => {
+			const body = Object.entries(data)
+				.map(a => `${JSON.stringify(a[0])}:${a[1]}`)
+				.join(',');
+			const script = `(""+JSON.stringify({${body}}))`;
+			let r: {[k: string]: any} | null = null;
+			try {
+				// Force return value string with concatenation, NOT casting.
+				// This prevents any funny business from sandboxed code.
+				r = JSON.parse(
+					// eslint-disable-next-line
+					'' + vm.runInContext(script, ctx, opts)
+				);
+			}
+			catch (err) {
+				// Do nothing.
+			}
+			if (!r) {
+				throw new Error('Error running sandboxed script');
+			}
+			return r;
 		}
-	);
+	};
+}
 
-	// Attempt to run code in sanbox and extract the info.
-	try {
-		// Run the pre script.
-		vm.runInContext(codePre, ctx, runOpts);
-
-		// Run the script code.
-		vm.runInContext(script, ctx, runOpts);
-
-		// Run the post script.
-		// Force return value to be string, with concatenation, NOT casting.
-		// This prevents any funny business from sandboxed code.
-		// eslint-disable-next-line
-		result = JSON.parse('' + vm.runInContext(codePost, ctx, runOpts));
-	}
-	catch (err) {
-		// Ignore failure.
-	}
-	return result;
+/**
+ * Code to create window.
+ *
+ * @param body HTML body.
+ * @returns JavaScript code.
+ */
+function codeWindow(body: string) {
+	return `(${WINDOW})(this,${JSON.stringify(body)})`;
 }
 
 /**
@@ -263,15 +228,50 @@ export async function extract(
 		throw new Error(`Invalid body type: ${bodyType}`);
 	}
 
-	const scripts = extractScripts(body);
-	let result: any | null = null;
-	for (const script of scripts) {
-		result = extractScript(body, script);
-		if (result) {
-			break;
+	const sandbox = createSandbox();
+	const timeout = 1000;
+
+	// Setup environment.
+	sandbox.run(codeWindow(body), {});
+
+	// Extract info from environment.
+	const info = sandbox.data(
+		{
+			scripts:
+				'(function(i,r,l){' +
+				'while(++i<l.length){' +
+				'r.push(l[i].textContent)' +
+				'}' +
+				'return r' +
+				'})(-1,[],document.getElementsByTagName("script"))'
+		},
+		{
+			timeout
+		}
+	);
+
+	// Run the scripts that modify the download button.
+	for (const script of info.scripts) {
+		if (script.includes('dlbutton')) {
+			// Run the required script.
+			sandbox.run(script, {
+				timeout
+			});
 		}
 	}
-	if (!result || !result.dlbutton) {
+
+	// Extract info about environment.
+	const result = sandbox.data(
+		{
+			dlbutton: 'document.getElementById("dlbutton").href'
+		},
+		{
+			timeout
+		}
+	);
+
+	// Check result.
+	if (!result.dlbutton) {
 		throw new Error('Failed to extract info');
 	}
 

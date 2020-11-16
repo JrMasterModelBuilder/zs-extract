@@ -43,7 +43,6 @@
 	"dependencies": {
 		"@babel/runtime": "^7.12.5",
 		"@types/node-fetch": "^2.5.7",
-		"cheerio": "^1.0.0-rc.3",
 		"node-fetch": "^2.6.1"
 	},
 	"devDependencies": {
