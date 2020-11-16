@@ -19,6 +19,11 @@ import MemoryFs from 'memory-fs';
 const readFile = util.promisify(fs.readFile);
 const pipeline = util.promisify(stream.pipeline);
 
+// Ugly hack to make Webpack work in older Node versions.
+if (!global.BigInt) {
+	global.BigInt = Number;
+}
+
 async function exec(cmd, args = []) {
 	await execa(cmd, args, {
 		preferLocal: true,
