@@ -38,7 +38,7 @@
 	"repository": "https://github.com/JrMasterModelBuilder/zs-extract.git",
 	"bugs": "https://github.com/JrMasterModelBuilder/zs-extract/issues",
 	"author": "JrMasterModelBuilder",
-	"copyright": "Copyright (c) 2019-2020 JrMasterModelBuilder",
+	"copyright": "Copyright (c) 2019-2021 JrMasterModelBuilder",
 	"license": "MPL-2.0",
 	"dependencies": {
 		"node-fetch": "^2.6.1"
