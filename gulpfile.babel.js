@@ -65,13 +65,9 @@ const compileWindow = onetime(async () => {
 			resolve();
 		});
 	});
-	return compiler.outputFileSystem.data[filename].toString('utf8')
-		.trim()
-		.split('=')
-		.slice(1)
-		.join('=')
-		.replace(/;$/, '')
-		.trim();
+	const code = compiler.outputFileSystem.data[filename].toString('utf8')
+		.replace(/[\s;]+$/, '');
+	return `(_=>{${code};return _})()`;
 });
 
 async function babelTarget(src, srcOpts, dest, modules) {
