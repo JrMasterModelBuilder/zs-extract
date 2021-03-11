@@ -275,13 +275,9 @@ export async function extract(
 	}
 
 	// Parse download link and file name.
-	const download = url.resolve(uri, result.dlbutton);
-	const filename = decodeURI(
-		(url.parse(download).pathname || '').split('/').pop() || ''
-	) || null;
-
+	const u = new url.URL(result.dlbutton, uri);
 	return {
-		download,
-		filename
+		download: u.href,
+		filename: decodeURI(u.pathname.split('/').pop() || '') || null
 	};
 }
