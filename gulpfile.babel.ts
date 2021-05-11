@@ -134,17 +134,6 @@ async function babelTarget(
 	);
 }
 
-async function eslint(strict: boolean) {
-	try {
-		await exec('eslint', ['.']);
-	}
-	catch (err) {
-		if (strict) {
-			throw err;
-		}
-	}
-}
-
 // clean
 
 gulp.task('clean:logs', async () => {
@@ -166,20 +155,10 @@ gulp.task('clean', gulp.parallel([
 	'clean:lib'
 ]));
 
-// lint (watch)
-
-gulp.task('lintw:es', async () => {
-	await eslint(false);
-});
-
-gulp.task('lintw', gulp.parallel([
-	'lintw:es'
-]));
-
 // lint
 
 gulp.task('lint:es', async () => {
-	await eslint(true);
+	await exec('eslint', ['.']);
 });
 
 gulp.task('lint', gulp.parallel([
@@ -235,16 +214,9 @@ gulp.task('watch', () => {
 
 gulp.task('all', gulp.series([
 	'clean',
-	'lint',
 	'build',
-	'test'
-]));
-
-// watched
-
-gulp.task('watched', gulp.series([
-	'all',
-	'watch'
+	'test',
+	'lint'
 ]));
 
 // prepack
