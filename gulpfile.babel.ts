@@ -35,9 +35,10 @@ async function packageJSON() {
 }
 
 async function babelrc() {
-	return Object.assign(JSON.parse(await readFile('.babelrc', 'utf8')), {
+	return {
+		...JSON.parse(await readFile('.babelrc', 'utf8')),
 		babelrc: false
-	});
+	};
 }
 
 async function compileWindow() {
