@@ -32,7 +32,8 @@
 		"build": "gulp build",
 		"test": "gulp test",
 		"all": "gulp all",
-		"watch": "nodemon --exec 'gulp watched'",
+		"watch": "gulp watch",
+		"watched": "gulp watched",
 		"prepack": "gulp prepack"
 	},
 	"repository": "https://github.com/JrMasterModelBuilder/zs-extract.git",
@@ -78,7 +79,6 @@
 		"jasmine-core": "^3.7.1",
 		"jasmine-spec-reporter": "^7.0.0",
 		"memory-fs": "^0.5.0",
-		"nodemon": "^2.0.7",
 		"onetime": "^6.0.0",
 		"source-map-support": "^0.5.19",
 		"typescript": "^4.2.4",
