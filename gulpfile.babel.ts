@@ -63,7 +63,12 @@ async function compileWindow() {
 	return `(_=>{${code};return _})()`;
 }
 
-async function babelTarget(src, srcOpts, dest, modules) {
+async function babelTarget(
+	src: string[],
+	srcOpts: any,
+	dest: string,
+	modules: string | boolean
+) {
 	// Change module.
 	const babelOptions = await babelrc();
 	for (const preset of babelOptions.presets) {
