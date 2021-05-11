@@ -12,7 +12,6 @@ import gulpSourcemaps from 'gulp-sourcemaps';
 import gulpBabel from 'gulp-babel';
 import execa from 'execa';
 import del from 'del';
-import onetime from 'onetime';
 import webpack from 'webpack';
 import MemoryFs from 'memory-fs';
 
@@ -21,10 +20,10 @@ const pipeline = util.promisify(stream.pipeline);
 
 // Ugly hack to make Webpack work in older Node versions.
 if (!global.BigInt) {
-	global.BigInt = Number;
+	(global as any).BigInt = Number;
 }
 
-async function exec(cmd, args = []) {
+async function exec(cmd: string, args: string[] = []) {
 	await execa(cmd, args, {
 		preferLocal: true,
 		stdio: 'inherit'
@@ -41,7 +40,7 @@ async function babelrc() {
 	});
 }
 
-const compileWindow = onetime(async () => {
+async function compileWindow() {
 	const filename = 'index.js';
 	const compiler = webpack({
 		entry: './window/',
@@ -53,22 +52,15 @@ const compileWindow = onetime(async () => {
 		}
 	});
 	compiler.outputFileSystem = new MemoryFs();
-	await new Promise((resolve, reject) => {
-		compiler.run((err, stats) => {
-			err = err || (
-				stats.hasErrors() ? stats.compilation.errors[0] : null
-			);
-			if (err) {
-				reject(err);
-				return;
-			}
-			resolve();
-		});
-	});
-	const code = compiler.outputFileSystem.data[filename].toString('utf8')
-		.replace(/[\s;]+$/, '');
+	const stats = await util.promisify(compiler.run.bind(compiler))();
+	if (stats.hasErrors()) {
+		throw stats.compilation.errors[0];
+	}
+	const code = (await util.promisify(
+		compiler.outputFileSystem.readFile.bind(compiler.outputFileSystem)
+	)(`/${filename}`, 'utf8')).replace(/[\s;]+$/, '');
 	return `(_=>{${code};return _})()`;
-});
+}
 
 async function babelTarget(src, srcOpts, dest, modules) {
 	// Change module.
@@ -105,9 +97,9 @@ async function babelTarget(src, srcOpts, dest, modules) {
 		["'@VERSION@'", JSON.stringify(pkg.version)],
 		["'@NAME@'", JSON.stringify(pkg.name)],
 		["'@WINDOW@'", JSON.stringify(await compileWindow())]
-	].map(v => gulpReplace(...v));
+	].map(([f, r]) => gulpReplace(f, r));
 
-	await pipeline(...[
+	await pipeline(
 		gulp.src(src, srcOpts),
 		filterMeta,
 		...filterMetaReplaces,
@@ -133,10 +125,10 @@ async function babelTarget(src, srcOpts, dest, modules) {
 			return contents;
 		}),
 		gulp.dest(dest)
-	].filter(Boolean));
+	);
 }
 
-async function eslint(strict) {
+async function eslint(strict: boolean) {
 	try {
 		await exec('eslint', ['.']);
 	}
