@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         config:
-          - node-version: '10.0.0'
+          - node-version: '10.13.0'
             NO_LINT: 1
           - node-version: '12.22.6' # LTS
             NO_LINT: 1
