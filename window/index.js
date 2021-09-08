@@ -2,22 +2,22 @@
 
 var xmldom = require('xmldom');
 
-var noop = function() {
+var noop = function () {
 	// Do nothing.
 };
 
-module.exports = function(window, body) {
+module.exports = function (window, body) {
 	window.window = window;
 	window.self = window;
 	window.top = window;
 	window.parent = window;
 
-	var document = (new xmldom.DOMParser({
+	var document = new xmldom.DOMParser({
 		errorHandler: {
 			warning: noop,
 			error: noop,
 			fatalError: noop
 		}
-	})).parseFromString(body, 'text/html');
+	}).parseFromString(body, 'text/html');
 	window.document = document;
 };

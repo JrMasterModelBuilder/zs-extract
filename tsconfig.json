@@ -6,10 +6,7 @@
 		"moduleResolution": "Node",
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
-		"lib": [
-			"ESNext",
-			"ES2017.SharedMemory"
-		],
+		"lib": ["ESNext", "ES2017.SharedMemory"],
 		"newLine": "lf",
 
 		"alwaysStrict": true,
@@ -28,16 +25,9 @@
 		"declaration": true,
 		"emitDeclarationOnly": true,
 
-		"types": [
-			"node",
-			"jasmine"
-		],
+		"types": ["node", "jasmine"],
 		"outDir": "lib",
-		"rootDirs": [
-			"./src"
-		]
+		"rootDirs": ["./src"]
 	},
-	"include": [
-		"src/**/*.ts"
-	]
+	"include": ["src/**/*.ts"]
 }

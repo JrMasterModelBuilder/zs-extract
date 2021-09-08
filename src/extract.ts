@@ -6,7 +6,7 @@ import fetch from 'node-fetch';
 import {WINDOW} from './data';
 
 export interface IRequestOptions {
-
+	//
 	/**
 	 * URL string.
 	 */
@@ -34,7 +34,7 @@ export interface IRequestOptions {
 }
 
 export interface IRequestResponse {
-
+	//
 	/**
 	 * Status code.
 	 */
@@ -52,10 +52,7 @@ export type IRequestCallback = (
 	body: any
 ) => void;
 
-export type IRequest = (
-	options: IRequestOptions,
-	cb?: IRequestCallback
-) => any;
+export type IRequest = (options: IRequestOptions, cb?: IRequestCallback) => any;
 
 /**
  * The default request implementation.
@@ -63,10 +60,7 @@ export type IRequest = (
  * @param options Options object.
  * @param cb Callback function.
  */
-function request(
-	options: IRequestOptions,
-	cb: IRequestCallback
-) {
+function request(options: IRequestOptions, cb: IRequestCallback) {
 	let response: IRequestResponse = {
 		statusCode: 0,
 		headers: {}
@@ -93,15 +87,14 @@ function request(
 		};
 		const data = await res.buffer();
 		return encoding === null ? data : data.toString(encoding as any);
-	})()
-		.then(
-			data => {
-				cb(null, response, data);
-			},
-			err => {
-				cb(err, response, null);
-			}
-		);
+	})().then(
+		data => {
+			cb(null, response, data);
+		},
+		err => {
+			cb(err, response, null);
+		}
+	);
 }
 
 /**
@@ -111,12 +104,9 @@ function request(
  * @param options Request options.
  * @returns Request response and body.
  */
-async function requestP(
-	req: IRequest,
-	options: IRequestOptions
-) {
+async function requestP(req: IRequest, options: IRequestOptions) {
 	const r = await new Promise<{
-
+		//
 		/**
 		 * Response object.
 		 */
@@ -125,9 +115,9 @@ async function requestP(
 		/**
 		 * Response body.
 		 */
-		body: any;
+		body: Buffer | string;
 	}>((resolve, reject) => {
-		req(options, (error, response, body) => {
+		req(options, (error, response, body: Buffer | string) => {
 			if (error) {
 				reject(error);
 				return;
@@ -150,24 +140,37 @@ function createSandbox() {
 	// Create a context with which to run code in.
 	// Creating the object with a null prototype is very important.
 	// Prevents host variables from leaking into the sanbox.
-	const ctxObj = Object.create(null);
+	const ctxObj = Object.create(null) as {toString?: () => string};
 	if (ctxObj.toString) {
 		throw new Error('Failed to create object without prototype');
 	}
 	const ctx = vm.createContext(ctxObj);
 	return {
+		/**
+		 * Run code, no return.
+		 *
+		 * @param code Code string.
+		 * @param opts VM options.
+		 */
 		run: (code: string, opts: vm.RunningScriptOptions) => {
 			let error = false;
 			try {
 				vm.runInContext(code, ctx, opts);
-			}
-			catch (err) {
+			} catch (err) {
 				error = true;
 			}
 			if (error) {
 				throw new Error('Error running sandboxed script');
 			}
 		},
+
+		/**
+		 * Run code, return data.
+		 *
+		 * @param data The data to get.
+		 * @param opts VM options.
+		 * @returns Data object.
+		 */
 		data: (data: {[k: string]: string}, opts: vm.RunningScriptOptions) => {
 			const body = Object.entries(data)
 				.map(a => `${JSON.stringify(a[0])}:${a[1]}`)
@@ -180,9 +183,8 @@ function createSandbox() {
 				r = JSON.parse(
 					// eslint-disable-next-line
 					'' + vm.runInContext(script, ctx, opts)
-				);
-			}
-			catch (err) {
+				) as {[k: string]: any} | null;
+			} catch (err) {
 				// Do nothing.
 			}
 			if (!r) {
@@ -210,10 +212,7 @@ function codeWindow(body: string) {
  * @param req Optional custom request function or null.
  * @returns File info.
  */
-export async function extract(
-	uri: string,
-	req: IRequest | null = null
-) {
+export async function extract(uri: string, req: IRequest | null = null) {
 	const requester = req || (request as IRequest);
 	const {response, body} = await requestP(requester, {
 		url: uri,
@@ -232,7 +231,7 @@ export async function extract(
 	const timeout = 1000;
 
 	// Setup environment.
-	sandbox.run(codeWindow(body), {});
+	sandbox.run(codeWindow(body.toString()), {});
 
 	// Extract info from environment.
 	const info = sandbox.data(
@@ -252,7 +251,7 @@ export async function extract(
 
 	// Run the scripts that modify the download button.
 	for (const script of info.scripts) {
-		if (script.includes('dlbutton')) {
+		if ((script as string).includes('dlbutton')) {
 			sandbox.run(script, {
 				timeout
 			});

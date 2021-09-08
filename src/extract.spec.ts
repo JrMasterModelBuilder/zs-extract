@@ -2,9 +2,7 @@ import crypto from 'crypto';
 
 import fetch from 'node-fetch';
 
-import {
-	extract
-} from './extract';
+import {extract} from './extract';
 
 const timeout = 10000;
 
@@ -37,37 +35,41 @@ function sha256(buffer: Buffer) {
 
 describe('extract', () => {
 	describe('extract', () => {
-		it('simple', async () => {
-			const info = await extract(avatar.URL);
-			expect(info.filename).toBe(avatar.filename);
-			expect(info.download).toMatch(/^https?:\/\//i);
+		it(
+			'simple',
+			async () => {
+				const info = await extract(avatar.URL);
+				expect(info.filename).toBe(avatar.filename);
+				expect(info.download).toMatch(/^https?:\/\//i);
 
-			if (skipTestDL) {
-				// Optionally force download request, without test.
-				// Might help keep the download active.
-				if (forceRequestDl) {
-					const res = await fetch(info.download, {
-						headers: {
-							'User-Agent': '-'
-						}
-					});
-					await res.buffer();
+				if (skipTestDL) {
+					// Optionally force download request, without test.
+					// Might help keep the download active.
+					if (forceRequestDl) {
+						const res = await fetch(info.download, {
+							headers: {
+								'User-Agent': '-'
+							}
+						});
+						await res.buffer();
+					}
+					return;
 				}
-				return;
-			}
 
-			const res = await fetch(info.download, {
-				headers: {
-					'User-Agent': '-'
-				}
-			});
-			const body = await res.buffer();
+				const res = await fetch(info.download, {
+					headers: {
+						'User-Agent': '-'
+					}
+				});
+				const body = await res.buffer();
 
-			expect(res.status).toBe(200);
+				expect(res.status).toBe(200);
 
-			expect(body.length).toBe(avatar.size);
+				expect(body.length).toBe(avatar.size);
 
-			expect(sha256(body)).toBe(avatar.sha256);
-		}, timeout);
+				expect(sha256(body)).toBe(avatar.sha256);
+			},
+			timeout
+		);
 	});
 });
