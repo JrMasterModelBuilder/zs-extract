@@ -12,9 +12,9 @@ jobs:
         config:
           - node-version: '10.13.0'
             NO_LINT: 1
-          - node-version: '12.22.6' # LTS
+          - node-version: '12.13.0' # LTS
             NO_LINT: 1
-          - node-version: '14.17.6' # LTS
+          - node-version: '14.15.0' # LTS
             NO_LINT: 1
           - node-version: '16.9.0'
 
