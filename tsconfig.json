@@ -6,6 +6,7 @@
 		"moduleResolution": "Node",
 		"esModuleInterop": true,
 		"allowSyntheticDefaultImports": true,
+		"isolatedModules": true,
 		"lib": ["ESNext", "ES2017.SharedMemory"],
 		"newLine": "lf",
 
@@ -14,7 +15,7 @@
 		"experimentalDecorators": true,
 		"forceConsistentCasingInFileNames": true,
 
-		"strictFunctionTypes": false,
+		"strictFunctionTypes": true,
 		"strictNullChecks": true,
 		"strictPropertyInitialization": true,
 
