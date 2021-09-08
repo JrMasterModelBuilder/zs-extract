@@ -41,7 +41,7 @@
 	"copyright": "Copyright (c) 2019-2021 JrMasterModelBuilder",
 	"license": "MPL-2.0",
 	"dependencies": {
-		"node-fetch": "^3.0.0"
+		"node-fetch": "^2.6.2"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.15.5",
