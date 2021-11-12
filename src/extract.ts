@@ -86,7 +86,9 @@ function request(options: IRequestOptions, cb: IRequestCallback) {
 			headers: headersObject
 		};
 		const data = await res.buffer();
-		return encoding === null ? data : data.toString(encoding as any);
+		return encoding === null
+			? data
+			: data.toString(encoding as BufferEncoding);
 	})().then(
 		data => {
 			cb(null, response, data);
@@ -250,8 +252,8 @@ export async function extract(uri: string, req: IRequest | null = null) {
 	);
 
 	// Run the scripts that modify the download button.
-	for (const script of info.scripts) {
-		if ((script as string).includes('dlbutton')) {
+	for (const script of info.scripts as string[]) {
+		if (script.includes('dlbutton')) {
 			sandbox.run(script, {
 				timeout
 			});
@@ -274,7 +276,7 @@ export async function extract(uri: string, req: IRequest | null = null) {
 	}
 
 	// Parse download link and file name.
-	const u = new url.URL(result.dlbutton, uri);
+	const u = new url.URL(result.dlbutton as string, uri);
 	return {
 		download: u.href,
 		filename: decodeURI(u.pathname.split('/').pop() || '') || null
