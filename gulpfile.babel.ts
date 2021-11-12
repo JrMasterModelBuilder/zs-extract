@@ -56,7 +56,7 @@ async function compileWindow() {
 	});
 	compiler.outputFileSystem = new MemoryFs();
 	const stats = (await util.promisify(
-		compiler.run.bind(compiler)
+		compiler.run.bind(compiler) as () => void
 	)()) as webpack.MultiStats;
 	if (stats.hasErrors()) {
 		throw (stats as any as {compilation: {errors: Error[]}}).compilation
@@ -76,7 +76,7 @@ async function compileWindow() {
 
 async function babelTarget(
 	src: string[],
-	srcOpts: any,
+	srcOpts: unknown,
 	dest: string,
 	modules: string | boolean
 ) {
