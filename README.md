@@ -5,7 +5,6 @@ Zippyshare download data extractor
 [![npm](https://img.shields.io/npm/v/zs-extract.svg)](https://npmjs.com/package/zs-extract)
 [![node](https://img.shields.io/node/v/zs-extract.svg)](https://nodejs.org)
 
-[![dependencies](https://img.shields.io/david/JrMasterModelBuilder/zs-extract.svg)](https://david-dm.org/JrMasterModelBuilder/zs-extract)
 [![size](https://packagephobia.now.sh/badge?p=zs-extract)](https://packagephobia.now.sh/result?p=zs-extract)
 [![downloads](https://img.shields.io/npm/dm/zs-extract.svg)](https://npmcharts.com/compare/zs-extract?minimal=true)
 
