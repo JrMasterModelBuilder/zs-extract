@@ -37,5 +37,5 @@ jobs:
       - run: npm run test
         env:
           # Cannot test actual download content from CI servers, HTML response.
-          SKIP_TEST_DL: 1
+          # SKIP_TEST_DL: 1
           FORCE_REQUEST_DL: 1
