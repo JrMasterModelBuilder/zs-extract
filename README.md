@@ -17,13 +17,16 @@ This module simplifies extracting download info from a Zippyshare link. Instead 
 # Usage
 
 ```js
-import zsExtract from 'zs-extract';
+import {extract} from 'zs-extract';
 
-const info = await zsExtract.extract(
-	'https://www83.zippyshare.com/v/yakMuCxe/file.html'
-);
+console.log(await extract('https://www83.zippyshare.com/v/yakMuCxe/file.html'));
+```
 
-console.log(info); // { download: 'https://www83.zippyshare.com/d/yakMuCxe/123456/jmmb%20avatar.png', filename: 'jmmb avatar.png' }
+```
+{
+  download: 'https://www83.zippyshare.com/d/yakMuCxe/12345/jmmb%20avatar.png',
+  filename: 'jmmb avatar.png'
+}
 ```
 
 # Bugs
