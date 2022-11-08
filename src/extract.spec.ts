@@ -50,7 +50,7 @@ async function retry<T>(f: () => Promise<T>): Promise<T> {
 			r = await f();
 			break;
 		} catch (err) {
-			error = err as Error;
+			error = error || (err as Error);
 		}
 		if (i < retries) {
 			// eslint-disable-next-line no-await-in-loop
