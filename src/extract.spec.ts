@@ -4,7 +4,7 @@ import fetch from 'node-fetch';
 
 import {extract} from './extract';
 
-const timeout = 10000;
+const timeout = 60000;
 
 const avatar = {
 	URL: 'https://www83.zippyshare.com/v/yakMuCxe/file.html',
@@ -21,6 +21,8 @@ const forceRequestDl = /^(1|true|yes)$/i.test(
 	process.env.FORCE_REQUEST_DL || ''
 );
 
+const retries = 5;
+
 /**
  * Create a sha256 hex lowercase hash from buffer.
  *
@@ -33,12 +35,40 @@ function sha256(buffer: Buffer) {
 	return h.digest('hex').toLowerCase();
 }
 
+/**
+ * Retry a promise function.
+ *
+ * @param f Promise function.
+ * @returns The first successful response.
+ */
+async function retry<T>(f: () => Promise<T>): Promise<T> {
+	let r: T;
+	let error: Error | null = null;
+	for (let i = 0; ; i++) {
+		try {
+			// eslint-disable-next-line no-await-in-loop
+			r = await f();
+			break;
+		} catch (err) {
+			error = err as Error;
+		}
+		if (i < retries) {
+			// eslint-disable-next-line no-await-in-loop
+			await new Promise(resolve => setTimeout(resolve, i * 1000));
+			continue;
+		}
+		throw error;
+	}
+	return r;
+}
+
 describe('extract', () => {
 	describe('extract', () => {
 		it(
 			'simple',
 			async () => {
-				const info = await extract(avatar.URL);
+				const info = await retry(async () => extract(avatar.URL));
+
 				expect(info.filename).toBe(avatar.filename);
 				expect(info.download).toMatch(/^https?:\/\//i);
 
@@ -56,17 +86,18 @@ describe('extract', () => {
 					return;
 				}
 
-				const res = await fetch(info.download, {
-					headers: {
-						'User-Agent': '-'
-					}
+				const {res, body} = await retry(async () => {
+					const res = await fetch(info.download, {
+						headers: {
+							'User-Agent': '-'
+						}
+					});
+					const body = await res.buffer();
+					return {res, body};
 				});
-				const body = await res.buffer();
 
 				expect(res.status).toBe(200);
-
 				expect(body.length).toBe(avatar.size);
-
 				expect(sha256(body)).toBe(avatar.sha256);
 			},
 			timeout
