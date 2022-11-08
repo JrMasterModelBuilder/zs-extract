@@ -76,27 +76,31 @@ describe('extract', () => {
 					// Optionally force download request, without test.
 					// Might help keep the download active.
 					if (forceRequestDl) {
-						const res = await fetch(info.download, {
-							headers: {
-								'User-Agent': '-'
-							}
+						await retry(async () => {
+							const res = await fetch(info.download, {
+								headers: {
+									'User-Agent': '-'
+								}
+							});
+							await res.buffer();
 						});
-						await res.buffer();
 					}
 					return;
 				}
 
-				const {res, body} = await retry(async () => {
+				const body = await retry(async () => {
 					const res = await fetch(info.download, {
 						headers: {
 							'User-Agent': '-'
 						}
 					});
+					if (res.status !== 200) {
+						throw new Error(`Status code: ${res.status}`);
+					}
 					const body = await res.buffer();
-					return {res, body};
+					return body;
 				});
 
-				expect(res.status).toBe(200);
 				expect(body.length).toBe(avatar.size);
 				expect(sha256(body)).toBe(avatar.sha256);
 			},
