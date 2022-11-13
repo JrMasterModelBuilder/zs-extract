@@ -2,7 +2,13 @@ import crypto from 'crypto';
 
 import fetch from 'node-fetch';
 
-import {extract} from './extract';
+import {
+	extract,
+	IRequest,
+	IRequestCallback,
+	IRequestOptions,
+	IRequestResponse
+} from './extract';
 
 const timeout = 60000;
 
@@ -21,8 +27,6 @@ const forceRequestDl = /^(1|true|yes)$/i.test(
 	process.env.FORCE_REQUEST_DL || ''
 );
 
-const retries = 5;
-
 /**
  * Create a sha256 hex lowercase hash from buffer.
  *
@@ -35,31 +39,165 @@ function sha256(buffer: Buffer) {
 	return h.digest('hex').toLowerCase();
 }
 
-/**
- * Retry a promise function.
- *
- * @param f Promise function.
- * @returns The first successful response.
- */
-async function retry<T>(f: () => Promise<T>): Promise<T> {
-	let r: T;
+async function corsAnywhereFetch(
+	url: string,
+	options: {
+		method?: string;
+		headers?: {[header: string]: string};
+		compress?: boolean;
+	}
+) {
+	const api = 'https://cors-anywhere.herokuapp.com';
+	const demoUrl = `${api}/corsdemo`;
+	const demo = await fetch(demoUrl);
+	if (demo.status !== 403) {
+		throw new Error(`Status code: ${demo.status}`);
+	}
+	const html = await demo.text();
+	const inputM = html.match(/<input[^<>]*?accessRequest[^<>]*>/);
+	const valueM = inputM ? inputM[0].match(/value=["'](.*?)["']/) : null;
+	const value = valueM ? valueM[1] : null;
+	if (!value) {
+		throw new Error('Failed to get token');
+	}
+
+	const access = await fetch(
+		`${demoUrl}?accessRequest=${encodeURIComponent(value)}`
+	);
+	if (access.status !== 403) {
+		throw new Error(`Status code: ${access.status}`);
+	}
+
+	return fetch(`${api}/${url}`, {
+		...options,
+		headers: {
+			'X-Requested-With': 'XMLHttpRequest',
+			...options.headers
+		}
+	});
+}
+
+function fetchToRequest(
+	fetch: (
+		url: string,
+		options: {
+			method?: string;
+			headers?: {[header: string]: string};
+			compress?: boolean;
+		}
+	) => Promise<{
+		status: number;
+		headers: {
+			raw(): {[header: string]: string[]};
+		};
+		buffer: () => Promise<Buffer>;
+	}>
+): IRequest {
+	return (options: IRequestOptions, cb?: IRequestCallback) => {
+		let response: IRequestResponse = {
+			statusCode: 0,
+			headers: {}
+		};
+		const {encoding} = options;
+		(async () => {
+			const res = await fetch(options.url, {
+				method: options.method || 'GET',
+				headers: {
+					'User-Agent': '-',
+					...(options.headers || {})
+				},
+				compress: !!options.gzip
+			});
+			const {status, headers} = res;
+			const headersRaw = headers.raw();
+			const headersObject: {[key: string]: string} = {};
+			for (const p of Object.keys(headersRaw)) {
+				headersObject[p] = headersRaw[p].join(', ');
+			}
+			response = {
+				statusCode: status,
+				headers: headersObject
+			};
+			const data = await res.buffer();
+			return encoding === null
+				? data
+				: data.toString(encoding as BufferEncoding);
+		})().then(
+			data => {
+				if (cb) {
+					cb(null, response, data);
+					return;
+				}
+			},
+			err => {
+				if (cb) {
+					cb(err, response, null);
+					return;
+				}
+			}
+		);
+	};
+}
+
+async function zsExtract(uri: string) {
 	let error: Error | null = null;
-	for (let i = 0; ; i++) {
+
+	// Try direct, then proxies.
+	for (const f of [
+		// Default fetch.
+		null,
+		// CORS anywhere proxy fetch.
+		corsAnywhereFetch
+	]) {
+		const request = f ? fetchToRequest(f) : null;
+		const fetcher = f || fetch;
+
+		// Continue with the first fetch type that works.
+		let info;
 		try {
 			// eslint-disable-next-line no-await-in-loop
-			r = await f();
-			break;
+			info = await extract(uri, request);
 		} catch (err) {
+			// Keep the first error.
 			error = error || (err as Error);
 		}
-		if (i < retries) {
-			// eslint-disable-next-line no-await-in-loop
-			await new Promise(resolve => setTimeout(resolve, i * 1000));
+		if (!info) {
 			continue;
 		}
-		throw error;
+
+		// Download body may be included here.
+		let body = null;
+		if (skipTestDL) {
+			// Optionally force download request, without test.
+			// Might help keep the download active.
+			if (forceRequestDl) {
+				// eslint-disable-next-line no-await-in-loop
+				const res = await fetcher(info.download, {
+					headers: {
+						'User-Agent': '-'
+					}
+				});
+				// eslint-disable-next-line no-await-in-loop
+				await res.buffer();
+			}
+		} else {
+			// eslint-disable-next-line no-await-in-loop
+			const res = await fetcher(info.download, {
+				headers: {
+					'User-Agent': '-'
+				}
+			});
+			if (res.status !== 200) {
+				throw new Error(`Status code: ${res.status}`);
+			}
+			// eslint-disable-next-line no-await-in-loop
+			body = await res.buffer();
+		}
+
+		return {...info, body};
 	}
-	return r;
+
+	throw error || new Error('Unknown error');
 }
 
 describe('extract', () => {
@@ -67,42 +205,15 @@ describe('extract', () => {
 		it(
 			'simple',
 			async () => {
-				const info = await retry(async () => extract(avatar.URL));
+				const {filename, download, body} = await zsExtract(avatar.URL);
 
-				expect(info.filename).toBe(avatar.filename);
-				expect(info.download).toMatch(/^https?:\/\//i);
+				expect(filename).toBe(avatar.filename);
+				expect(download).toMatch(/^https?:\/\//i);
 
-				if (skipTestDL) {
-					// Optionally force download request, without test.
-					// Might help keep the download active.
-					if (forceRequestDl) {
-						await retry(async () => {
-							const res = await fetch(info.download, {
-								headers: {
-									'User-Agent': '-'
-								}
-							});
-							await res.buffer();
-						});
-					}
-					return;
+				if (body) {
+					expect(body.length).toBe(avatar.size);
+					expect(sha256(body)).toBe(avatar.sha256);
 				}
-
-				const body = await retry(async () => {
-					const res = await fetch(info.download, {
-						headers: {
-							'User-Agent': '-'
-						}
-					});
-					if (res.status !== 200) {
-						throw new Error(`Status code: ${res.status}`);
-					}
-					const body = await res.buffer();
-					return body;
-				});
-
-				expect(body.length).toBe(avatar.size);
-				expect(sha256(body)).toBe(avatar.sha256);
 			},
 			timeout
 		);
