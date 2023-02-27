@@ -155,14 +155,10 @@ function createSandbox() {
 		 * @param opts VM options.
 		 */
 		run: (code: string, opts: vm.RunningScriptOptions) => {
-			let error = false;
 			try {
 				vm.runInContext(code, ctx, opts);
 			} catch (err) {
-				error = true;
-			}
-			if (error) {
-				throw new Error('Error running sandboxed script');
+				// Do nothing.
 			}
 		},
 
@@ -188,9 +184,6 @@ function createSandbox() {
 				) as {[k: string]: any} | null;
 			} catch (err) {
 				// Do nothing.
-			}
-			if (!r) {
-				throw new Error('Error running sandboxed script');
 			}
 			return r;
 		}
@@ -250,6 +243,10 @@ export async function extract(uri: string, req: IRequest | null = null) {
 			timeout
 		}
 	);
+	if (!info) {
+		// Should not be possible.
+		throw new Error('Internal error');
+	}
 
 	// Run the scripts that modify the download button.
 	for (const script of info.scripts as string[]) {
@@ -271,7 +268,7 @@ export async function extract(uri: string, req: IRequest | null = null) {
 	);
 
 	// Check result.
-	if (!result.dlbutton) {
+	if (!result || !result.dlbutton) {
 		throw new Error('Failed to extract info');
 	}
 
