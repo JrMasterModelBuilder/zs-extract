@@ -1,6 +1,6 @@
 'use strict';
 
-var xmldom = require('xmldom');
+var xmldom = require('@xmldom/xmldom');
 
 var noop = function () {
 	// Do nothing.
@@ -18,6 +18,6 @@ module.exports = function (window, body) {
 			error: noop,
 			fatalError: noop
 		}
-	}).parseFromString(body, 'text/html');
+	}).parseFromString(String(body), 'text/html');
 	window.document = document;
 };
